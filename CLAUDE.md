@@ -12,21 +12,21 @@ Boost skills live in `.junie/skills/` (not `.claude/skills/`). Read the relevant
 
 - **Roles** are integers. `App\Enums\UserRole`: `0` Admin, `1` HR, `2` Candidate (`users.role`, tinyint).
 - **Candidate status** is an integer. `App\Enums\CandidateStatus`: `0` Created, `1` Processing, `2` Approved, `3` Rejected (`users.status`, nullable).
-  - `User::booted()` enforces it: non-candidates always get `null`, and candidates without a status get `Created`. Don't duplicate this in controllers.
+    - `User::booted()` enforces it: non-candidates always get `null`, and candidates without a status get `Created`. Don't duplicate this in controllers.
 - **Candidate profile**: `App\Models\CandidateProfile` (`User` hasOne `candidateProfile`) holds `summary` and the CV (`cv_path`, `cv_original_name`).
-  - CVs are stored on the private `local` disk under `cvs/` and are only served through `CandidateCvController` (`users.cv`).
-  - Deleting a profile, or its user, deletes the file.
+    - CVs are stored on the private `local` disk under `cvs/` and are only served through `CandidateCvController` (`users.cv`).
+    - Deleting a profile, or its user, deletes the file.
 - The frontend mirrors the enums in `resources/js/lib/users.ts` (`Role`, `Status`, label maps) and `resources/js/types/auth.ts`. Keep both in sync when an enum changes.
 
 ## Permissions
 
-| Action | Admin | HR | Candidate |
-|---|---|---|---|
-| List / view users | all | candidates only | none |
-| Create, delete users | yes (not themselves) | no | no |
-| Edit users | anyone, incl. role | candidates only, role excluded | no |
-| Own summary + CV | no | no | yes (`/profile`) |
-| View summary, download CV | all | all candidates | own only |
+| Action                    | Admin                | HR                             | Candidate        |
+| ------------------------- | -------------------- | ------------------------------ | ---------------- |
+| List / view users         | all                  | candidates only                | none             |
+| Create, delete users      | yes (not themselves) | no                             | no               |
+| Edit users                | anyone, incl. role   | candidates only, role excluded | no               |
+| Own summary + CV          | no                   | no                             | yes (`/profile`) |
+| View summary, download CV | all                  | all candidates                 | own only         |
 
 - Rules live in `app/Policies/UserPolicy.php` (`viewAny`, `view`, `create`, `update`, `assignRole`, `delete`) and `app/Policies/CandidateProfilePolicy.php` (`view`, `manageOwn`).
 - Form requests authorize through these policies.
@@ -65,8 +65,8 @@ Seeded logins, all with password `password`:
 ## MCP servers (`routes/ai.php`, `app/Mcp`)
 
 - **`candidates`** is a local stdio server (`Mcp::local`) built from `CandidatesServer` plus 4 tools:
-  - `list-candidates`, `get-candidate`, `candidate-pipeline-stats` (read-only)
-  - `update-candidate-status` (the only tool that writes)
+    - `list-candidates`, `get-candidate`, `candidate-pipeline-stats` (read-only)
+    - `update-candidate-status` (the only tool that writes)
 - **Acting user:** stdio has no HTTP auth, so `CandidatesServer::boot()` signs in the account from `MCP_USER_EMAIL` (`config('services.mcp.acting_user_email')`).
 - **Prompts** (`app/Mcp/Prompts`): `review-candidate`, `shortlist-candidates`, `draft-candidate-email` and `pipeline-report`. Each one embeds live CRM data as JSON in the prompt text and tells the model not to change statuses without confirmation.
 - **Authorization:** tools and prompts share the `App\Mcp\Concerns\InteractsWithCandidates` trait. It checks `UserPolicy` and holds the shared serialization and `pipelineStats()`. With no user, or a candidate account, everything returns "Access denied".
@@ -77,10 +77,10 @@ Seeded logins, all with password `password`:
 ## Claude Code hooks (`.claude/settings.json`)
 
 - `.claude/hooks/post-edit.sh` runs after Write/Edit:
-  - Pint on PHP files.
-  - `vp fmt` on `resources/js` TS/TSX files (skips generated files and `components/ui`).
-  - `wayfinder:generate` after route or controller edits.
-  - Runs an edited `tests/**/*Test.php` file and reports failures back.
+    - Pint on PHP files.
+    - `vp fmt` on `resources/js` TS/TSX files (skips generated files and `components/ui`).
+    - `wayfinder:generate` after route or controller edits.
+    - Runs an edited `tests/**/*Test.php` file and reports failures back.
 - `.claude/hooks/guard-database.sh` asks for confirmation before `migrate:fresh|refresh|reset|rollback` or `db:wipe`.
 
 ## Before finishing a change

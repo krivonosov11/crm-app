@@ -65,6 +65,9 @@ export default defineConfig({
         htmlWhitespaceSensitivity: 'css',
         ignorePatterns: [
             '.github/**',
+            // Generated and overwritten by `php artisan boost:update`.
+            '.junie/**',
+            'AGENTS.md',
             'composer.json',
             'resources/js/components/ui/*',
             'resources/views/mail/*',
